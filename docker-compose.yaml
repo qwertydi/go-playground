@@ -1,0 +1,20 @@
+services:
+  # wsclient:
+  #   image: golang:1.20
+  #   hostname: wsclient
+  #   working_dir: /usr/src/wsclient
+  #   volumes: [ .:/usr/src/wsclient ]
+  #   command: go run github.com/qwertydi/go-playground
+  #   mem_limit: 4096MB
+  #   networks: [ playground ]
+
+  wsserver:
+    image: public.ecr.aws/h0f1y5l9/wsserver:latest
+    hostname: wsserver
+    mem_limit: 4096MB
+    ports: [ '5050:5050' ]
+    networks: [ playground ]
+
+networks:
+  playground:
+    name: playground
