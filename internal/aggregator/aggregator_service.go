@@ -2,6 +2,7 @@ package aggregator
 
 import (
 	"github.com/qwertydi/go-challenge/models"
+	"strings"
 	"time"
 )
 
@@ -19,25 +20,38 @@ func (h *AggregateServiceHandlerImpl) AggregateData(time time.Time) []models.Agg
 
 	records := data.records
 
-	var aggregatedData []models.AggregatedData
+	mappings := make(map[string]int32)
+
+	addOrIncrement := func(key string, counter int32) {
+		if _, exists := mappings[key]; exists {
+			mappings[key] = mappings[key] + counter
+		} else {
+			mappings[key] = counter
+		}
+	}
 
 	for source, destinations := range records {
 		// get source parent id
 		if _, sourceParentExists := parents[source]; sourceParentExists {
 			// get destination parent id
-			// log.Printf("\nSource Parent exists for: %s, parentId: %s", source, parents[source])
 			for _, destination := range destinations {
 				if _, sourceDestinationExists := parents[destination.destination]; sourceDestinationExists {
-					// log.Printf("\nDestination Parent exists for: %s, parentId: %s", destination.destination, parents[destination.destination])
-					// todo aggregate by count by parent
-					aggregatedData = append(aggregatedData, models.AggregatedData{
-						Source:      parents[source],
-						Destination: parents[destination.destination],
-						Count:       destination.count,
-					})
+					joinString := parents[source] + "_" + parents[destination.destination]
+					addOrIncrement(joinString, destination.count)
 				}
 			}
 		}
+	}
+
+	var aggregatedData []models.AggregatedData
+
+	for k, v := range mappings {
+		split := strings.Split(k, "_")
+		aggregatedData = append(aggregatedData, models.AggregatedData{
+			Source:      split[0],
+			Destination: split[1],
+			Count:       v,
+		})
 	}
 
 	// remove data already processed

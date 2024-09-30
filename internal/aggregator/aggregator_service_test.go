@@ -21,8 +21,8 @@ func (m *MockDataServiceHandler) GetData(time time.Time) *Data {
 }
 
 func (m *MockDataServiceHandler) RemoveData(time time.Time) {
-	//TODO implement me
-	panic("implement me")
+	dateTime := generateKeyByDateTime(time)
+	delete(m.data.records, dateTime)
 }
 
 func (m *MockDataServiceHandler) ProcessMessage(message []byte) {
@@ -34,12 +34,17 @@ func TestAggregateService_AggregateData(t *testing.T) {
 	// Arrange
 	records := make(map[string][]RecordEntry)
 
-	records["1"] = append(make([]RecordEntry, 1), RecordEntry{destination: "2", count: 1})
+	var entries []RecordEntry
+	entries = append(entries, RecordEntry{destination: "2", count: 1})
+	entries = append(entries, RecordEntry{destination: "3", count: 4})
+
+	records["1"] = entries
 	records["2"] = append(make([]RecordEntry, 1), RecordEntry{destination: "3", count: 2})
 	records["3"] = append(make([]RecordEntry, 1), RecordEntry{destination: "5", count: 1})
 	records["6"] = append(make([]RecordEntry, 1), RecordEntry{destination: "1", count: 1})
 	records["3"] = append(make([]RecordEntry, 1), RecordEntry{destination: "4", count: 1})
 	records["9"] = append(make([]RecordEntry, 1), RecordEntry{destination: "10", count: 1})
+	records["1"] = append(make([]RecordEntry, 1), RecordEntry{destination: "3", count: 4})
 
 	data := Data{
 		records: records,
@@ -65,6 +70,7 @@ func TestAggregateService_AggregateData(t *testing.T) {
 		{Source: "parent3", Destination: "parent4", Count: 1},
 		{Source: "parent1", Destination: "parent2", Count: 1},
 		{Source: "parent2", Destination: "parent3", Count: 2},
+		{Source: "parent1", Destination: "parent3", Count: 4},
 	}
 
 	// t.Log(result, expectedData)
@@ -78,7 +84,6 @@ func TestAggregateService_AggregateData(t *testing.T) {
 func expectedDataExists(expectedData []models.AggregatedData, r models.AggregatedData) bool {
 	exists := false
 	for _, e := range expectedData {
-
 		if r.Destination == e.Destination && r.Source == e.Source && r.Count == r.Count {
 			exists = true
 		}
