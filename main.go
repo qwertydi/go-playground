@@ -12,7 +12,20 @@ import (
 	"time"
 )
 
+// GetEnv retrieves the value of the environment variable named by the key.
+// It returns the value and a boolean indicating whether it was found.
+// If the variable is not found, it returns the default value.
+func GetEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
+}
+
 func main() {
+	sHost := GetEnv("SOCKET_HOST", "localhost")
+	sPort := GetEnv("SOCKET_PORT", "5050")
+
 	timeService := util.TimeService()
 	dataService := aggregator.DataService(timeService)
 	aggregateService := aggregator.AggregateService(dataService)
@@ -22,7 +35,8 @@ func main() {
 		AggregateHandler:   aggregateService,
 	}
 
-	client := wsclient.NewWebSocketClient("ws://localhost:5050/ws", handler)
+	connection := "ws://" + sHost + ":" + sPort + "/ws"
+	client := wsclient.NewWebSocketClient(connection, handler)
 
 	err := client.Connect()
 	if err != nil {
