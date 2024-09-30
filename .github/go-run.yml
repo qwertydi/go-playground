@@ -1,0 +1,40 @@
+name: Go CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]  # Triggers on new PRs, updates, and reopened PRs
+    branches:
+      - main  # Change to your target branch if necessary
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.21'  # Specify the Go version you want to use
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Run tests and generate report
+        run: |
+            mkdir -p reports
+            go test -v ./... -json > reports/test_report.json
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: reports/test_report.json
+
+      - name: Build
+        run: go build -v ./...
