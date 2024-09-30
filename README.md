@@ -1,5 +1,7 @@
 # Go Playground
 
+[![Go CI](https://github.com/qwertydi/go-playground/actions/workflows/go-run.yml/badge.svg)](https://github.com/qwertydi/go-playground/actions/workflows/go-run.yml)
+
 ## Challenge
 
 Write a little message aggregator service (wsclient) that:
